@@ -22,7 +22,6 @@ ACCESS_TOKEN = 'DHT22_DEMO_TOKEN'
 
 # Data capture and upload interval in seconds.
 INTERVAL=2
-sensor_data = {'temperature': 0, 'humidity': 0}
 next_reading = time.time() 
 client = mqtt.Client()
 
