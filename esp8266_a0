@@ -1,10 +1,10 @@
-include <PubSubClient.h>
-include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include <ESP8266WiFi.h>
 
-define WIFI_AP "YOUR_WIFI_AP"
-define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFI_AP "YOUR_WIFI_AP"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 
-define TOKEN "ESP8266_DEMO_TOKEN"
+#define TOKEN "ESP8266_DEMO_TOKEN"
 
 char thingsboardServer[] = "YOUR_THINGSBOARD_HOST_OR_IP";
 
@@ -32,49 +32,39 @@ void loop()
   }
 
   if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
-    getAndSendTemperatureAndHumidityData();
+    getAndSendLuxData();
     lastSend = millis();
   }
 
   client.loop();
 }
 
-void getAndSendTemperatureAndHumidityData()
+void getAndSendLuxData()
 {
-  Serial.println("Collecting temperature data.");
+  Serial.println("Collecting Lux data.");
 
-  // Reading temperature or humidity takes about 250 milliseconds!
-  float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
+  // Reading lux takes about 250 milliseconds!
+  float value = analogRead(A0);
 
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
+    Serial.println("Failed to read from light sensor!");
     return;
   }
 
-  Serial.print("Humidity: ");
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Temperature: ");
+  Serial.print("Lux: ");
   Serial.print(t);
-  Serial.print(" *C ");
-
-  String temperature = String(t);
-  String humidity = String(h);
-
+  
+  String temp=String(value);
 
   // Just debug messages
-  Serial.print( "Sending temperature and humidity : [" );
-  Serial.print( temperature ); Serial.print( "," );
-  Serial.print( humidity );
+  Serial.print( "Sending Lux : [" );
+  Serial.print( lux ); Serial.print( "," );
   Serial.print( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"temperature\":"; payload += temperature; payload += ",";
-  payload += "\"humidity\":"; payload += humidity;
+  payload += "\"lux\":"; payload += lux; payload += ",";
   payload += "}";
 
   // Send payload
