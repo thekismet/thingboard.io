@@ -1,14 +1,23 @@
+#include "DHT.h"
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 
-#define WIFI_AP "YOUR_WIFI_AP"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFI_AP "xxxxxx"
+#define WIFI_PASSWORD "xxxxxx"
 
-#define TOKEN "ESP8266_DEMO_TOKEN"
+#define TOKEN "xxxxxx"
 
-char thingsboardServer[] = "YOUR_THINGSBOARD_HOST_OR_IP";
+// DHT & light sensor
+#define DHTPIN 2
+#define DHTTYPE DHT22
+#define PHOTO_PIN A0
+
+char thingsboardServer[] = "xxxxxx";
 
 WiFiClient wifiClient;
+
+// Initialize DHT sensor.
+DHT dht(DHTPIN, DHTTYPE);
 
 PubSubClient client(wifiClient);
 
@@ -32,39 +41,55 @@ void loop()
   }
 
   if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
-    getAndSendLuxData();
+    getAndSendTemperatureAndHumidityData();
     lastSend = millis();
   }
 
   client.loop();
 }
 
-void getAndSendLuxData()
+void getAndSendTemperatureAndHumidityData()
 {
-  Serial.println("Collecting Lux data.");
+  Serial.println("Collecting temperature data.");
 
-  // Reading lux takes about 250 milliseconds!
-  float value = analogRead(A0);
+  // Reading temperature or humidity takes about 250 milliseconds!
+  float h = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  float t = dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from light sensor!");
+    Serial.println("Failed to read from DHT sensor!");
     return;
   }
+  // reading light cell
+  int p = analogRead(PHOTO_PIN);
 
-  Serial.print("Lux: ");
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
   Serial.print(t);
-  
-  String temp=String(value);
+  Serial.print(" *C ");
+  Serial.print("Light: ");
+  Serial.print(p);
+
+  String temperature = String(t);
+  String humidity = String(h);
+  String light = String(p);
 
   // Just debug messages
-  Serial.print( "Sending Lux : [" );
-  Serial.print( lux ); Serial.print( "," );
+  Serial.print( "Sending temperature and humidity : [" );
+  Serial.print( temperature ); Serial.print( "," );
+  Serial.print( humidity ); Serial.print( "," );
+  Serial.print( light );
   Serial.print( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"lux\":"; payload += lux; payload += ",";
+  payload += "\"temperature\":"; payload += temperature; payload += ",";
+  payload += "\"humidity\":"; payload += humidity; payload += ",";
+  payload += "\"light\":"; payload += light;
   payload += "}";
 
   // Send payload
