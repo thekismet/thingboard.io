@@ -1,0 +1,52 @@
+
+import os
+import time
+import sys
+import paho.mqtt.client as mqtt
+from envirophat import light, weather, motion, analog
+import json
+
+THINGSBOARD_HOST = 'xxxxxxxxxx'
+ACCESS_TOKEN = 'xxxxxxxxxx'
+
+# Data capture and upload interval in seconds.
+INTERVAL=2
+sensor_data = {'temperature': 0, 'pressure': 0, 'light': 0}
+next_reading = time.time()
+client = mqtt.Client()
+
+# Set access token
+client.username_pw_set(ACCESS_TOKEN)
+
+# Connect to ThingsBoard using default MQTT port and 60 seconds keepalive interval
+client.connect(THINGSBOARD_HOST, 1883, 60)
+
+client.loop_start()
+
+try:
+  while True:
+    ### Assume - the '-9' is a temperature calibration to take the Pi's heat into consideration. Adjust if needed.
+    temperature, pressure, lux = weather.temperature() -9, weather.pressure()/100, light.light()
+    temperature = round(temperature, 1)
+    pressure = round(pressure, 1)
+    lux = round(lux, 0)
+    if temperature is not None and pressure is not None and lux is not None:
+        print ("Temp={0:.1f}*C   Pressure={1:.0f} hPa   Light={2:.0f} lux".format(temperature, pressure, lux))
+        sensor_data['temperature'] = temperature
+        sensor_data['pressure'] = pressure
+        sensor_data['light'] = lux
+
+        # Sending humidity and temperature data to ThingsBoard
+        client.publish('v1/devices/me/telemetry', json.dumps(sensor_data), 1)
+
+        next_reading += INTERVAL
+        sleep_time = next_reading-time.time()
+        if sleep_time > 0:
+            time.sleep(sleep_time)
+
+
+except KeyboardInterrupt:
+    pass
+
+client.loop_stop()
+client.disconnect()
