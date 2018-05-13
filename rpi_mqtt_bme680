@@ -38,10 +38,10 @@ print("\n\nCollecting data...")
 try:
     while True:
       if sensor.get_sensor_data():
-        output_temp = (sensor.data.temperature)
+        output_temp = (sensor.data.temperature) - 3
         output_pressure = (sensor.data.pressure)
         output_humidity = (sensor.data.humidity)
-        output_airqual = (sensor.data.gas_resistance)
+        output_airqual = (sensor.data.gas_resistance) / 1000
 
         sensor_data['temperature'] = output_temp
         sensor_data['pressure'] = output_pressure
