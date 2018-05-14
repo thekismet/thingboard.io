@@ -78,7 +78,7 @@ void getAndSendTemperatureAndHumidityData()
   float a = (bme.readAltitude(SEALEVELPRESSURE_HPA));
   float h = (bme.readHumidity());
   
-    // Check if any reads failed and exit early (to try again).
+  // Check if any reads failed and exit early (to try again).
   if (isnan(t) || isnan(p) || isnan(a) || isnan(h)) {
     Serial.println("Failed to read from BME280 sensor!");
     return;
