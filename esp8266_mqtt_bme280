@@ -1,0 +1,170 @@
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <PubSubClient.h>
+#include <ESP8266WiFi.h>
+
+#define BME_SCK 13
+#define BME_MISO 12
+#define BME_MOSI 11
+#define BME_CS 10
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+#define WIFI_AP "xxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxx"
+
+#define TOKEN "xxxxxxxxxx"
+
+char thingsboardServer[] = "xxxxxxxxxx";
+
+WiFiClient wifiClient;
+
+PubSubClient client(wifiClient);
+
+int status = WL_IDLE_STATUS;
+unsigned long lastSend;
+
+Adafruit_BME280 bme; // I2C
+//Adafruit_BME280 bme(BME_CS); // hardware SPI
+//Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
+
+unsigned long delayTime;
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println(F("BME280 sensing"));
+    delay(10);
+    InitWiFi();
+    client.setServer( thingsboardServer, 1883 );
+    lastSend = 0;
+    
+    bool status;
+    
+    status = bme.begin();  
+    if (!status) {
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        while (1);
+    }
+    
+    Serial.println("-- Default --");
+    delayTime = 1000;
+
+    Serial.println();
+}
+
+
+void loop() 
+{
+  if ( !client.connected() ) {
+    reconnect();
+  }
+
+  if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
+    getAndSendTemperatureAndHumidityData();
+    lastSend = millis();
+  }
+
+  client.loop();
+}
+
+void getAndSendTemperatureAndHumidityData()
+{
+  Serial.println("Collecting data.");
+  
+  float t = (bme.readTemperature());
+  float p = (bme.readPressure() / 100.0F);
+  float a = (bme.readAltitude(SEALEVELPRESSURE_HPA));
+  float h = (bme.readHumidity());
+  
+    // Check if any reads failed and exit early (to try again).
+  if (isnan(t) || isnan(p) || isnan(a) || isnan(h)) {
+    Serial.println("Failed to read from BME280 sensor!");
+    return;
+  }
+
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C ");
+  
+  Serial.print("Pressure: ");
+  Serial.print(p);
+  Serial.print(" hPa");
+
+  Serial.print("Altitude: ");
+  Serial.print(a);
+  Serial.print(" m");
+
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print(" %");
+
+  String temperature = String(t);
+  String pressure = String(p);
+  String altitude = String(a);
+  String humidity = String(h);
+
+  // Just debug messages
+  Serial.print( "Sending temperature and humidity : [" );
+  Serial.print( temperature ); Serial.print( "," );
+  Serial.print( pressure ); Serial.print( "," );
+  Serial.print( altitude ); Serial.print( "," );
+  Serial.print( humidity );
+  Serial.print( "]   -> " );
+
+  // Prepare a JSON payload string
+  String payload = "{";
+  payload += "\"temperature\":"; payload += temperature; payload += ",";
+  payload += "\"pressure\":"; payload += pressure; payload += ",";
+  payload += "\"altitude\":"; payload += altitude; payload += ",";
+  payload += "\"humidity\":"; payload += humidity;
+  payload += "}";
+
+  // Send payload
+  char attributes[100];
+  payload.toCharArray( attributes, 100 );
+  client.publish( "v1/devices/me/telemetry", attributes );
+  Serial.println( attributes );
+
+}
+
+void InitWiFi()
+{
+  Serial.println("Connecting to AP ...");
+  // attempt to connect to WiFi network
+
+  WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to AP");
+}
+
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    status = WiFi.status();
+    if ( status != WL_CONNECTED) {
+      WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+      }
+      Serial.println("Connected to AP");
+    }
+    Serial.print("Connecting to ThingsBoard node ...");
+    // Attempt to connect (clientId, username, password)
+    if ( client.connect("ESP8266 Device", TOKEN, NULL) ) {
+      Serial.println( "[DONE]" );
+    } else {
+      Serial.print( "[FAILED] [ rc = " );
+      Serial.print( client.state() );
+      Serial.println( " : retrying in 5 seconds]" );
+      // Wait 5 seconds before retrying
+      delay( 5000 );
+    }
+  }
+}
