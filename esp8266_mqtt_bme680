@@ -68,7 +68,7 @@ void getAndSendTemperatureAndHumidityData()
 {
   Serial.println("Collecting data.");
   // Read temperature as Celsius (the default)
-  float t = (bme.temperature);
+  float t = (bme.temperature - 2.3);
   // Read pressure
   float p = (bme.pressure / 100.0);
   // Read humidity
@@ -89,7 +89,7 @@ void getAndSendTemperatureAndHumidityData()
     return;
   }
   Serial.print("Temperature = ");
-  Serial.print(bme.temperature);
+  Serial.print(bme.temperature - 2.3);
   Serial.println(" *C");
 
   Serial.print("Pressure = ");
