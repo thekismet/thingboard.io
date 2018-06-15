@@ -10,7 +10,7 @@ THINGSBOARD_HOST = 'xxxxxxxxxx'
 ACCESS_TOKEN = 'xxxxxxxxxx'
 
 # Data capture and upload interval in seconds.
-INTERVAL=2
+INTERVAL=30
 sensor_data = {'temperature': 0, 'pressure': 0, 'light': 0}
 next_reading = time.time()
 client = mqtt.Client()
