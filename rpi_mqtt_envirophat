@@ -25,8 +25,8 @@ client.loop_start()
 
 try:
   while True:
-    ### Assume - the '-6' is a temperature calibration to take the Pi's heat into consideration. Adjust if needed.
-    temperature, pressure, lux = weather.temperature() -6, weather.pressure()/100, light.light()
+    ### Assume - the '-4.8' is a temperature calibration to take the Pi's heat into consideration. Adjust if needed.
+    temperature, pressure, lux = weather.temperature() -4.8, weather.pressure()/100, light.light()
     temperature = round(temperature, 1)
     pressure = round(pressure, 1)
     lux = round(lux, 0)
