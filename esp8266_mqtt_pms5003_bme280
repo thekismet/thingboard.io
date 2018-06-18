@@ -4,6 +4,8 @@
 //#include "Adafruit_BME680.h"
 #include <SoftwareSerial.h>
 SoftwareSerial pmsSerial(2, 3);
+#include <PubSubClient.h>
+#include <ESP8266WiFi.h>
 
 //#define BME_SCK 13
 //#define BME_MISO 12
@@ -26,12 +28,9 @@ struct pms5003data {
  
 struct pms5003data data;
 
-#include <PubSubClient.h>
-#include <ESP8266WiFi.h>
-
 #define WIFI_AP "xxxxxxxxxx"
 #define WIFI_PASSWORD "xxxxxxxxxx"
-#define TOKEN "XXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define TOKEN "xxxxxxxxxx"
 char thingsboardServer[] = "xxxxxxxxxx";
 
 WiFiClient wifiClient;
@@ -72,7 +71,7 @@ void loop() {
 
   if ( millis() - lastSend > 60000 ) { // Update and send only after 1 seconds
     //getAndSendTemperatureAndHumidityData();
-    readPMSdata(&pmsSerial);
+    (readPMSdata(&pmsSerial));
     lastSend = millis();
   }
 
@@ -94,12 +93,15 @@ void readPMSdata()
   // Read altitude
   //float a = (bme.readAltitude(SEALEVELPRESSURE_HPA));
   
-  float pm10 = (data.pm10_standard);
-  float pm25 = (data.pm25_standard);
-  float pm100 = (data.pm100_standard);
+  float pms10 = (data.pm10_standard);
+  float pms25 = (data.pm25_standard);
+  float pms100 = (data.pm100_standard);
+  float pme10 = (data.pm10_env);
+  float pme25 = (data.pm25_env);
+  float pme100 = (data.pm100_env);
   
   // Check if any reads failed and exit early (to try again).
-  if (isnan(pm10) || isnan(pm25) || isnan(pm100)) 
+  if (isnan(pms10) || isnan(pms25) || isnan(pms100) || isnan(pme10) || isnan(pme25) || isnan(pme100)) 
   //if (isnan(t) || isnan(p) || isnan(h) || isnan(g) || isnan(a)) 
   {
     Serial.println("Failed to read from sensors!");
@@ -130,16 +132,28 @@ void readPMSdata()
   //Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
   //Serial.println(" m");
 
-  Serial.print("PM 1.0 = ");
+  Serial.print("PM 1.0 standard = ");
   Serial.print(data.pm10_standard);
   Serial.println(" um");
 
-  Serial.print("PM 2.5 = ");
+  Serial.print("PM 2.5 standard = ");
   Serial.print(data.pm25_standard);
   Serial.println(" um");
 
-  Serial.print("PM 10 = ");
+  Serial.print("PM 10 standard = ");
   Serial.print(data.pm100_standard);
+  Serial.println(" um");
+
+  Serial.print("PM 1.0 environment = ");
+  Serial.print(data.pm10_env);
+  Serial.println(" um");
+
+  Serial.print("PM 2.5 environment = ");
+  Serial.print(data.pm25_env);
+  Serial.println(" um");
+
+  Serial.print("PM 10 environment = ");
+  Serial.print(data.pm100_env);
   Serial.println(" um");
 
   Serial.println();
@@ -150,9 +164,12 @@ void readPMSdata()
   //String humidity = String(h);
   //String gas = String(g);
   //String altitude = String(a);
-  String pmone = String(pm10);
-  String pmtwofive = String(pm25);
-  String pmten = String(pm100);
+  String pmson = String(pms10);
+  String pmstf = String(pms25);
+  String pmste = String(pms100);
+  String pmeon = String(pme10);
+  String pmetf = String(pme25);
+  String pmete = String(pme100);
 
   // Just debug messages
   Serial.print( "Sending data : [" );
@@ -161,9 +178,12 @@ void readPMSdata()
   //Serial.print( humidity ); Serial.print( "," );
   //Serial.print( gas ); Serial.print( "," );
   //Serial.print( altitude );
-  Serial.print( pmone ); Serial.print( "," );
-  Serial.print( pmtwofive ); Serial.print( "," );
-  Serial.print( pmten );
+  Serial.print( pmson ); Serial.print( "," );
+  Serial.print( pmstf ); Serial.print( "," );
+  Serial.print( pmste ); Serial.print( "," );
+  Serial.print( pmeon ); Serial.print( "," );
+  Serial.print( pmetf ); Serial.print( "," );
+  Serial.print( pmete );
   Serial.print( "]   -> " );
 
   // Prepare a JSON payload string
@@ -173,9 +193,12 @@ void readPMSdata()
   //payload += "\"humidity\":"; payload += humidity; payload += ",";
   //payload += "\"gas\":"; payload += gas; payload += ",";
   //payload += "\"altitude\":"; payload += altitude;
-  payload += "\"pmone\":"; payload += pmone; payload += ",";
-  payload += "\"pmtwofive\":"; payload += pmtwofive; payload += ",";
-  payload += "\"pmten\":"; payload += pmten;
+  payload += "\"pmson\":"; payload += pmson; payload += ",";
+  payload += "\"pmstf\":"; payload += pmstf; payload += ",";
+  payload += "\"pmste\":"; payload += pmste; payload += ",";
+  payload += "\"pmeon\":"; payload += pmeon; payload += ",";
+  payload += "\"pmetf\":"; payload += pmetf; payload += ",";
+  payload += "\"pmete\":"; payload += pmete;
   payload += "}";
 
   // Send payload
