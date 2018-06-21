@@ -21,12 +21,12 @@ SoftwareSerial PMSerial(2, 3); // RX, TX
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-#define WIFI_AP "XXXXXXXXXX"
-#define WIFI_PASSWORD "XXXXXXXXXX"
+#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-#define TOKEN "XXXXXXXXXX"
+#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-char thingsboardServer[] = "XXXXXXXXXX";
+char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 WiFiClient wifiClient;
 
@@ -94,7 +94,9 @@ void loop()
 
 void getAndSendTemperatureAndHumidityData()
 {
+  Serial.println();
   Serial.println("Collecting data.");
+  Serial.println();
 
   // Reading data takes about 250 milliseconds!
   float pms01 = (PM01Value);
@@ -145,31 +147,31 @@ void getAndSendTemperatureAndHumidityData()
   String pms1 = String(pms01);
   String pms2 = String(pms25);
   String pms3 = String(pms10);
-  String temperature = String(t);
-  String pressure = String(p);
-  String altitude = String(a);
-  String humidity = String(h);
+  String temp = String(t);
+  String pres = String(p);
+  String alti = String(a);
+  String humi = String(h);
 
   // Just debug messages
   Serial.print( "Sending data : [" );
   Serial.print( pms1 ); Serial.print( "," );
   Serial.print( pms2 ); Serial.print( "," );
   Serial.print( pms3 ); Serial.print( "," );
-  Serial.print( temperature ); Serial.print( "," );
-  Serial.print( pressure ); Serial.print( "," );
-  Serial.print( altitude ); Serial.print( "," );
-  Serial.print( humidity );
-  Serial.print( "]   -> " );
+  Serial.print( temp ); Serial.print( "," );
+  Serial.print( pres ); Serial.print( "," );
+  Serial.print( alti ); Serial.print( "," );
+  Serial.print( humi );
+  Serial.println( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
   payload += "\"pms1\":"; payload += pms1; payload += ",";
   payload += "\"pms2\":"; payload += pms2; payload += ",";
   payload += "\"pms3\":"; payload += pms3; payload += ",";
-  payload += "\"temperature\":"; payload += temperature; payload += ",";
-  payload += "\"pressure\":"; payload += pressure; payload += ",";
-  payload += "\"altitude\":"; payload += altitude; payload += ",";
-  payload += "\"humidity\":"; payload += humidity;
+  payload += "\"temp\":"; payload += temp; payload += ",";
+  payload += "\"pres\":"; payload += pres; payload += ",";
+  payload += "\"alti\":"; payload += alti; payload += ",";
+  payload += "\"humi\":"; payload += humi;
   payload += "}";
 
   // Send payload
