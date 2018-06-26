@@ -1,14 +1,14 @@
-#include <SoftwareSerial.h>
-SoftwareSerial pmsSerial(2, 3);
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+SoftwareSerial pmsSerial(2, 3);
 
-#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 WiFiClient wifiClient;
 
@@ -16,7 +16,7 @@ PubSubClient client(wifiClient);
 
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
- 
+
 void setup() {
   // our debugging output
   Serial.begin(115200);
@@ -40,66 +40,76 @@ struct pms5003data {
 };
  
 struct pms5003data data;
-    
-void loop() {
+
+void loop()
+{
   if ( !client.connected() ) {
     reconnect();
   }
 
-  if ( millis() - lastSend > 10000 ) { // Update and send only after 10 seconds
-    (readPMSdata(&pmsSerial));
+  if (readPMSdata(&pmsSerial)) {
+    
+  }
+  
+  if ( millis() - lastSend > 20000 ) { // Update and send only after 20 seconds
+    getAndSendTemperatureAndHumidityData();
     lastSend = millis();
   }
-  
-  if (readPMSdata(&pmsSerial)) {
-    // reading data was successful!
-    Serial.println();
-    Serial.println("---------------------------------------");
-    Serial.println("Concentration Units (standard)");
-    Serial.print("PM 1.0: "); Serial.print(data.pm10_standard);
-    Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_standard);
-    Serial.print("\t\tPM 10: "); Serial.println(data.pm100_standard);
-    Serial.println("---------------------------------------");
-    Serial.println("Concentration Units (environmental)");
-    Serial.print("PM 1.0: "); Serial.print(data.pm10_env);
-    Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_env);
-    Serial.print("\t\tPM 10: "); Serial.println(data.pm100_env);
-    Serial.println("---------------------------------------");
-    Serial.print("Particles > 0.3um / 0.1L air:"); Serial.println(data.particles_03um);
-    Serial.print("Particles > 0.5um / 0.1L air:"); Serial.println(data.particles_05um);
-    Serial.print("Particles > 1.0um / 0.1L air:"); Serial.println(data.particles_10um);
-    Serial.print("Particles > 2.5um / 0.1L air:"); Serial.println(data.particles_25um);
-    Serial.print("Particles > 5.0um / 0.1L air:"); Serial.println(data.particles_50um);
-    Serial.print("Particles > 50 um / 0.1L air:"); Serial.println(data.particles_100um);
-    Serial.println("---------------------------------------");
-  }
-  
-  float pmson = (data.pm10_standard);
-  float pmstw = (data.pm25_standard);
-  float pmste = (data.pm100_standard);
+
+  client.loop();
+}
+
+void getAndSendTemperatureAndHumidityData()
+{
+  Serial.println("Collecting data.");
+  float pm1 = (data.pm10_standard);
+  float pm2 = (data.pm25_standard);
+  float pm3 = (data.pm100_standard);
+  float pm4 = (data.pm10_env);
+  float pm5 = (data.pm25_env);
+  float pm6 = (data.pm100_env);
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(pmson) || isnan(pmstw) || isnan(pmste)) {
+  if (isnan(pm1) || isnan(pm2) || isnan(pm3) || isnan(pm4) || isnan(pm5) || isnan(pm6)) {
     Serial.println("Failed to read from sensor!");
     return;
   }
 
-  String pm1 = String(pmson);
-  String pm2 = String(pmstw);
-  String pm3 = String(pmste);
+  Serial.println("Concentration Units (standard)");
+  Serial.print("PM 1.0: "); Serial.print(data.pm10_standard);
+  Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_standard);
+  Serial.print("\t\tPM 10: "); Serial.println(data.pm100_standard);
+  Serial.println("---------------------------------------");
+  Serial.println("Concentration Units (environmental)");
+  Serial.print("PM 1.0: "); Serial.print(data.pm10_env);
+  Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_env);
+  Serial.print("\t\tPM 10: "); Serial.println(data.pm100_env);
+
+  String pms1 = String(pm1);
+  String pms2 = String(pm2);
+  String pms3 = String(pm3);
+  String pme1 = String(pm4);
+  String pme2 = String(pm5);
+  String pme3 = String(pm2);
 
   // Just debug messages
   Serial.print( "Sending data : [" );
-  Serial.print( pm1 ); Serial.print( "," );
-  Serial.print( pm2 ); Serial.print( "," );
-  Serial.print( pm3 );
-  Serial.print( "]   -> " );
+  Serial.print( pms1 ); Serial.print( "," );
+  Serial.print( pms2 ); Serial.print( "," );
+  Serial.print( pms3 ); Serial.print( "," );
+  Serial.print( pme1 ); Serial.print( "," );
+  Serial.print( pme2 ); Serial.print( "," );
+  Serial.print( pme3 );
+  Serial.println( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"pm1\":"; payload += pm1; payload += ",";
-  payload += "\"pm2\":"; payload += pm2; payload += ",";
-  payload += "\"pm3\":"; payload += pm3;
+  payload += "\"pms1\":"; payload += pms1; payload += ",";
+  payload += "\"pms2\":"; payload += pms2; payload += ",";
+  payload += "\"pms3\":"; payload += pms3; payload += ",";
+  payload += "\"pme1\":"; payload += pme1; payload += ",";
+  payload += "\"pme2\":"; payload += pme2; payload += ",";
+  payload += "\"pme3\":"; payload += pme3;
   payload += "}";
 
   // Send payload
@@ -108,9 +118,48 @@ void loop() {
   client.publish( "v1/devices/me/telemetry", attributes );
   Serial.println( attributes );
 
-  client.loop();
 }
- 
+
+void InitWiFi()
+{
+  Serial.println("Connecting to AP ...");
+  // attempt to connect to WiFi network
+
+  WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to AP");
+}
+
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    status = WiFi.status();
+    if ( status != WL_CONNECTED) {
+      WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+      }
+      Serial.println("Connected to AP");
+    }
+    Serial.print("Connecting to ThingsBoard node ...");
+    // Attempt to connect (clientId, username, password)
+    if ( client.connect("ESP8266 Device", TOKEN, NULL) ) {
+      Serial.println( "[DONE]" );
+    } else {
+      Serial.print( "[FAILED] [ rc = " );
+      Serial.print( client.state() );
+      Serial.println( " : retrying in 5 seconds]" );
+      // Wait 5 seconds before retrying
+      delay( 5000 );
+    }
+  }
+}
+
 boolean readPMSdata(Stream *s) {
   if (! s->available()) {
     return false;
@@ -159,43 +208,4 @@ boolean readPMSdata(Stream *s) {
   }
   // success!
   return true;
-}
-
-void InitWiFi()
-{
-  Serial.println("Connecting to AP ...");
-  // attempt to connect to WiFi network
-
-  WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("Connected to AP");
-}
-
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    status = WiFi.status();
-    if ( status != WL_CONNECTED) {
-      WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-      while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-      }
-      Serial.println("Connected to AP");
-    }
-    Serial.print("Connecting to ThingsBoard node ...");
-    // Attempt to connect (clientId, username, password)
-    if ( client.connect("ESP8266 Device", TOKEN, NULL) ) {
-      Serial.println( "[DONE]" );
-    } else {
-      Serial.print( "[FAILED] [ rc = " );
-      Serial.print( client.state() );
-      Serial.println( " : retrying in 5 seconds]" );
-      // Wait 5 seconds before retrying
-      delay( 5000 );
-    }
-  }
 }
