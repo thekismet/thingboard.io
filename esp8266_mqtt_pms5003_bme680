@@ -17,12 +17,12 @@ Adafruit_BME680 bme; // I2C
 //Adafruit_BME680 bme(BME_CS); // hardware SPI
 //Adafruit_BME680 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
-#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxx"
 
-#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxx"
 
-char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxx";
 
 WiFiClient wifiClient;
 
@@ -131,7 +131,7 @@ void getAndSendTemperatureAndHumidityData()
   Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
   Serial.println(" m");
   
-  Serial.print("Concentration Units (standard)");
+  Serial.println("Concentration Units (standard)");
   Serial.print("PM 1.0: "); Serial.print(data.pm10_standard);
   Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_standard);
   Serial.println("\t\tPM 10: "); Serial.println(data.pm100_standard);
@@ -146,7 +146,7 @@ void getAndSendTemperatureAndHumidityData()
   String pms3 = String(pm3);
 
   // Just debug messages
-  Serial.print( "Sending data : [" );
+  Serial.println( "Sending data : [" );
   Serial.print( t ); Serial.print( "," );
   Serial.print( p ); Serial.print( "," );
   Serial.print( h ); Serial.print( "," );
