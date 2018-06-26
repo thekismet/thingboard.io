@@ -17,12 +17,12 @@ Adafruit_BME680 bme; // I2C
 //Adafruit_BME680 bme(BME_CS); // hardware SPI
 //Adafruit_BME680 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
-#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxx"
 
-#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxx"
+#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxx"
 
-char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxx";
+char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxx";
 
 WiFiClient wifiClient;
 
@@ -91,17 +91,17 @@ void loop()
 void getAndSendTemperatureAndHumidityData()
 {
   Serial.println("Collecting data.");
-  float t = (bme.temperature - 2.3);
+  float t = (bme.temperature);
   float p = (bme.pressure / 100.0);
   float h = (bme.humidity);
   float g = (bme.gas_resistance / 1000.0);    
   float a = (bme.readAltitude(SEALEVELPRESSURE_HPA));
-  float pm1 = (data.pm10_standard);
-  float pm2 = (data.pm25_standard);
-  float pm3 = (data.pm100_standard);
+  float p1 = (data.pm10_standard);
+  float p2 = (data.pm25_standard);
+  float p3 = (data.pm100_standard);
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(t) || isnan(p) || isnan(h) || isnan(g) || isnan(a) || isnan(pm1) || isnan(pm2) || isnan(pm3)) {
+  if (isnan(t) || isnan(p) || isnan(h) || isnan(g) || isnan(a) || isnan(p1) || isnan(p2) || isnan(p3)) {
     Serial.println("Failed to read from sensor!");
     return;
   }
@@ -132,41 +132,41 @@ void getAndSendTemperatureAndHumidityData()
   Serial.println(" m");
   
   Serial.println("Concentration Units (standard)");
-  Serial.print("PM 1.0: "); Serial.print(data.pm10_standard);
-  Serial.print("\t\tPM 2.5: "); Serial.print(data.pm25_standard);
-  Serial.println("\t\tPM 10: "); Serial.println(data.pm100_standard);
+  Serial.print("PM 1.0: "); Serial.println(data.pm10_standard);
+  Serial.print("PM 2.5: "); Serial.println(data.pm25_standard);
+  Serial.print("PM 10: "); Serial.println(data.pm100_standard);
 
-  String temperature = String(t);
-  String pressure = String(p);
-  String humidity = String(h);
+  String tem = String(t);
+  String pre = String(p);
+  String hum = String(h);
   String gas = String(g);
-  String altitude = String(a);
-  String pms1 = String(pm1);
-  String pms2 = String(pm2);
-  String pms3 = String(pm3);
+  String alt = String(a);
+  String pm1 = String(p1);
+  String pm2 = String(p2);
+  String pm3 = String(p3);
 
   // Just debug messages
-  Serial.println( "Sending data : [" );
-  Serial.print( t ); Serial.print( "," );
-  Serial.print( p ); Serial.print( "," );
-  Serial.print( h ); Serial.print( "," );
-  Serial.print( g ); Serial.print( "," );
-  Serial.print( a ); Serial.print( "," );
-  Serial.print( pms1 ); Serial.print( "," );
-  Serial.print( pms2 ); Serial.print( "," );
-  Serial.print( pms3 );
+  Serial.print( "Sending data : [" );
+  Serial.print( tem ); Serial.print( "," );
+  Serial.print( pre ); Serial.print( "," );
+  Serial.print( hum ); Serial.print( "," );
+  Serial.print( gas ); Serial.print( "," );
+  Serial.print( alt ); Serial.print( "," );
+  Serial.print( pm1 ); Serial.print( "," );
+  Serial.print( pm2 ); Serial.print( "," );
+  Serial.print( pm3 );
   Serial.println( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"t\":"; payload += t; payload += ",";
-  payload += "\"p\":"; payload += p; payload += ",";
-  payload += "\"h\":"; payload += h; payload += ",";
-  payload += "\"g\":"; payload += g; payload += ",";
-  payload += "\"a\":"; payload += a; payload += ",";
-  payload += "\"pms1\":"; payload += pms1;
-  payload += "\"pms2\":"; payload += pms2;
-  payload += "\"pms3\":"; payload += pms3;
+  payload += "\"tem\":"; payload += tem; payload += ",";
+  payload += "\"pre\":"; payload += pre; payload += ",";
+  payload += "\"hum\":"; payload += hum; payload += ",";
+  payload += "\"gas\":"; payload += gas; payload += ",";
+  payload += "\"alt\":"; payload += alt; payload += ",";
+  payload += "\"pm1\":"; payload += pm1; payload += ",";
+  payload += "\"pm2\":"; payload += pm2; payload += ",";
+  payload += "\"pm3\":"; payload += pm3;
   payload += "}";
 
   // Send payload
