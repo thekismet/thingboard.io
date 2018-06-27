@@ -1,28 +1,30 @@
-#include <Wire.h>
-#include <SPI.h>
-#include <Adafruit_Sensor.h>
-#include "Adafruit_BME680.h"
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
 SoftwareSerial pmsSerial(2, 3);
 
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include "Adafruit_BME680.h"
+
 #define BME_SCK 13
 #define BME_MISO 12
 #define BME_MOSI 11
 #define BME_CS 10
+
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 Adafruit_BME680 bme; // I2C
 //Adafruit_BME680 bme(BME_CS); // hardware SPI
 //Adafruit_BME680 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
 
-#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxx"
-#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_AP "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxx"
+#define TOKEN "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxx";
+char thingsboardServer[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 WiFiClient wifiClient;
 
@@ -56,7 +58,6 @@ void setup() {
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150); // 320*C for 150 ms
-  
 }
  
 struct pms5003data {
@@ -105,14 +106,12 @@ void getAndSendTemperatureAndHumidityData()
     Serial.println("Failed to read from sensor!");
     return;
   }
-  
   if (! bme.performReading()) {
     Serial.println("Failed to perform reading :(");
     return;
   }
-  
   Serial.print("Temperature = ");
-  Serial.print(bme.temperature);
+  Serial.print(bme.temperature - 2.3);
   Serial.println(" *C");
 
   Serial.print("Pressure = ");
@@ -132,26 +131,26 @@ void getAndSendTemperatureAndHumidityData()
   Serial.println(" m");
   
   Serial.println("Concentration Units (standard)");
-  Serial.print("PM 1.0: "); Serial.println(data.pm10_standard);
-  Serial.print("PM 2.5: "); Serial.println(data.pm25_standard);
+  Serial.print("PM 1.0: "); Serial.print(data.pm10_standard);
+  Serial.print("PM 2.5: "); Serial.print(data.pm25_standard);
   Serial.print("PM 10: "); Serial.println(data.pm100_standard);
 
-  String tem = String(t);
-  String pre = String(p);
-  String hum = String(h);
-  String gas = String(g);
-  String alt = String(a);
+  String te = String(t);
+  String pr = String(p);
+  String hu = String(h);
+  String ga = String(g);
+  String al = String(a);
   String pm1 = String(p1);
   String pm2 = String(p2);
   String pm3 = String(p3);
 
   // Just debug messages
   Serial.print( "Sending data : [" );
-  Serial.print( tem ); Serial.print( "," );
-  Serial.print( pre ); Serial.print( "," );
-  Serial.print( hum ); Serial.print( "," );
-  Serial.print( gas ); Serial.print( "," );
-  Serial.print( alt ); Serial.print( "," );
+  Serial.print( te ); Serial.print( "," );
+  Serial.print( pr ); Serial.print( "," );
+  Serial.print( hu ); Serial.print( "," );
+  Serial.print( ga ); Serial.print( "," );
+  Serial.print( al ); Serial.print( "," );
   Serial.print( pm1 ); Serial.print( "," );
   Serial.print( pm2 ); Serial.print( "," );
   Serial.print( pm3 );
@@ -159,11 +158,11 @@ void getAndSendTemperatureAndHumidityData()
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"tem\":"; payload += tem; payload += ",";
-  payload += "\"pre\":"; payload += pre; payload += ",";
-  payload += "\"hum\":"; payload += hum; payload += ",";
-  payload += "\"gas\":"; payload += gas; payload += ",";
-  payload += "\"alt\":"; payload += alt; payload += ",";
+  payload += "\"te\":"; payload += te; payload += ",";
+  payload += "\"pr\":"; payload += pr; payload += ",";
+  payload += "\"hu\":"; payload += hu; payload += ",";
+  payload += "\"ga\":"; payload += ga; payload += ",";
+  payload += "\"al\":"; payload += al; payload += ",";
   payload += "\"pm1\":"; payload += pm1; payload += ",";
   payload += "\"pm2\":"; payload += pm2; payload += ",";
   payload += "\"pm3\":"; payload += pm3;
